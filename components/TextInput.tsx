@@ -5,30 +5,30 @@ interface TextInputProps {
   id: string;
   label: string;
   placeholder: string;
-  // value: string;
+  value: string;
   onChange: any;
   name: string;
 }
-
-// Do I need the value prop? Does not seem like it
 
 export default function TextInput({
   id,
   label,
   placeholder,
-  // value,
+  value,
   onChange,
   name,
 }: TextInputProps): JSX.Element {
   return (
     <div className="relative text-input-group ease-in-out transition-all p-2 m-2 justify-center flex">
-      <label className="absolute -top-2 transition-all p-1">{label}</label>
+      <label className="absolute -top-2 transition-all p-1" htmlFor={id}>
+        {label}
+      </label>
       <input
         className="block text-base px-2 pt-2 pb-1 bg-black border-b-2 border-b-slate-700 focus:border-b-white focus:outline-1 focus:outline-offset-8 shadow-lg transition-all"
         id={id}
         type="text"
         placeholder={placeholder}
-        // defaultValue={value}
+        value={value}
         onChange={onChange}
         name={name}
       ></input>
