@@ -71,7 +71,7 @@ export default function Home() {
           <InputGroup
             key={uuidv4()}
             id={index}
-            onChange={(e: React.ChangeEvent) => onChange(e, index)}
+            onChange={(e: React.ChangeEvent<HTMLTextElements>) => onChange(e, index)}
             onClick={() => removeField(index)}
             inputValue={element.fieldName}
             textAreaValue={element.fieldValue}
