@@ -6,7 +6,15 @@ import { FormEvent, use, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import InputGroup from "@/components/InputGroup";
 
+
+// The same onChange is being used for an input and a textarea. Both share the common properties of name and value so this interface covers those
+interface HTMLTextElements extends HTMLElement {
+  name: string;
+  value: string;
+}
+
 interface FieldObject {
+  [index: string]: string;
   fieldName: string;
   fieldValue: string;
 }
@@ -20,25 +28,15 @@ class FieldObject {
 
 export default function Home() {
   const [userInput, setUserInput] = useState(Array<FieldObject>);
-  const [controlledInput, setControlledInput] = useState({email: ""})
 
   useEffect(() => {
     retrieveStorage();
   }, []);
 
-  useEffect(() => {
-    console.log("UE")
-  }, [controlledInput])
-
-  function controlledInputHandler(e: React.ChangeEvent<HTMLInputElement>) {
-    const target = e.target
-    setControlledInput({...controlledInput, [target.name]: target.value})
-  }
-
-  function onChange(e: React.ChangeEvent, index: number) {
+  function onChange(e: React.ChangeEvent<HTMLTextElements>, index: number) {
     const target = e.target;
     const newUserInput: Array<FieldObject> = userInput;
-    newUserInput[index][target.name as keyof FieldObject] = target.value;
+    newUserInput[index][target.name] = target.value;
     setUserInput(newUserInput);
   }
 
@@ -64,10 +62,7 @@ export default function Home() {
     localStorage.setItem("currentObject", JSON.stringify(userInput));
   }
 
-  function autoSave() {
-    const interval = 5000
-    setInterval()
-  }
+  function autoSave() {}
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -88,7 +83,6 @@ export default function Home() {
         <br />
         <button type="submit">Save</button>
       </form>
-      <input value={controlledInput.email} name="email" onChange={e => controlledInputHandler(e)} />
     </main>
   );
 }

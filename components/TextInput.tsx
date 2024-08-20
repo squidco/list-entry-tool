@@ -28,7 +28,7 @@ export default function TextInput({
         id={id}
         type="text"
         placeholder={placeholder}
-        value={value}
+        defaultValue={value}
         onChange={onChange}
         name={name}
       ></input>
