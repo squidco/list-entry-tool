@@ -17,6 +17,8 @@ interface FieldObject {
   key: string;
 }
 
+
+// TODO: Add 'locked' boolean to persist locked status
 class FieldObject {
   constructor(fieldName: string, fieldValue: string) {
     this.fieldName = fieldName;
@@ -30,10 +32,12 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [overwrite, setOverwrite] = useState(false);
   const timeoutInterval = 5000;
+  // TODO: Probably switch this to a ref
   let timer: number;
   const overWriteIndex = useRef(-1);
 
   // Populates initial values
+  // TODO: Loading screen or something promises would be useful here
   useEffect(() => {
     retrieveStorage();
   }, []);
@@ -71,17 +75,19 @@ export default function Home() {
     }
   }
 
-  // Saves userInput to local storage as 'currentObject' TODO: Save the userInput to the overall JSON object as well
+  // Saves userInput to local storage as 'currentObject'
   function saveCurrentObject() {
     localStorage.setItem("currentObject", JSON.stringify(userInput));
   }
 
+  // TODO: MAKE SURE ID STAYS THE SAME
   function saveData(overwrite: boolean) {
     const entries = JSON.parse(localStorage.getItem("entries") || "[]");
     const formattedObject = {
       id: uuidv4(),
     };
 
+    // Adds properties to the formatted object by iterating over the userInput state variable
     for (const element of userInput) {
       formattedObject[element.fieldName] = element.fieldValue;
     }
@@ -111,10 +117,15 @@ export default function Home() {
     }, timeoutInterval);
   }
 
+  // Function for testing overwrite
   function changeOverwriteIndex() {
     overWriteIndex.current = 1;
   }
 
+  // TODO: Create a function to clear out fieldValues out of the fieldObjects in userInput
+  function clearValues() {}
+
+  // Componentize Modal
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {showModal && (
