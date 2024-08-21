@@ -1,12 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import TextInput from "@/components/TextInput";
 import { FormEvent, use, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import InputGroup from "@/components/InputGroup";
-import { CLIENT_STATIC_FILES_RUNTIME_MAIN } from "next/dist/shared/lib/constants";
-import { log, time } from "console";
 
 // The same onChange is being used for an input and a textarea. Both share the common properties of name and value so this interface covers those
 interface HTMLTextElements extends HTMLElement {
@@ -34,10 +30,12 @@ export default function Home() {
   const timeoutInterval = 5000;
   let timer: number;
 
+  // Populates initial values
   useEffect(() => {
     retrieveStorage();
   }, []);
 
+  // Handles user typing in the inputs and text area
   function onChange(e: React.ChangeEvent<HTMLTextElements>, index: number) {
     const target = e.target;
     const newUserInput: Array<FieldObject> = userInput;
@@ -45,10 +43,12 @@ export default function Home() {
     setUserInput([...newUserInput]);
   }
 
+  // Adds new fieldObject to the userInput state
   function addNewField() {
     setUserInput([...userInput, new FieldObject("", "")]);
   }
 
+  // Retrieves currentObject from local storage TODO: Retrieve the overall JSON object from local storage
   function retrieveStorage() {
     const storedObject = localStorage.getItem("currentObject");
     setUserInput(
@@ -56,19 +56,23 @@ export default function Home() {
     );
   }
 
+  // Handles the user pressing the 'Save' button
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    localStorage.setItem("currentObject", JSON.stringify(userInput));
+    saveData()
   }
 
+  // Saves userInput to local storage as 'currentObject' TODO: Save the userInput to the overall JSON object as well
   function saveData() {
     localStorage.setItem("currentObject", JSON.stringify(userInput));
   }
 
+  // Clears the autosave timeout when the user types inside the form tag
   function onKeyDown() {
     window.clearTimeout(timer);
   }
 
+  // Clears then creates a timeout that autosaves the users work after they stop typing and the timeout runs out
   function onKeyUp() {
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
