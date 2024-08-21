@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 
 interface TextFieldProps {
-  id: string;
   label: string;
   placeholder: string;
   value: string;
@@ -10,10 +9,7 @@ interface TextFieldProps {
   name: string;
 }
 
-// Do I need the value prop? Does not seem like it
-
 export default function TextField({
-  id,
   label,
   placeholder,
   value,
@@ -22,11 +18,10 @@ export default function TextField({
 }: TextFieldProps): JSX.Element {
   return (
     <div className="relative text-input-group ease-in-out transition-all p-2 m-2 justify-center flex">
-     <label className="transition-all p-1">
+      <label className="transition-all p-1">
         {label}
         <textarea
           className="block text-base px-2 pt-2 pb-1 bg-black border-b-2 border-b-slate-700 focus:border-b-white focus:outline-1 focus:outline-offset-4 shadow-lg transition-all mt-2"
-          type="text"
           placeholder={placeholder}
           defaultValue={value}
           onChange={onChange}

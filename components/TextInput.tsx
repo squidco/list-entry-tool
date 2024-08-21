@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 
 interface TextInputProps {
-  id: string;
   label: string;
   placeholder: string;
   value: string;
@@ -11,7 +10,6 @@ interface TextInputProps {
 }
 
 export default function TextInput({
-  id,
   label,
   placeholder,
   value,
@@ -26,7 +24,7 @@ export default function TextInput({
           className="block text-base px-2 pt-2 pb-1 bg-black border-b-2 border-b-slate-700 focus:border-b-white focus:outline-1 focus:outline-offset-4 shadow-lg transition-all mt-2"
           type="text"
           placeholder={placeholder}
-          defaultValue={value}
+          value={value}
           onChange={onChange}
           name={name}
         ></input>
