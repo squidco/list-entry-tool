@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, use, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import InputGroup from "@/components/InputGroup";
 
@@ -27,8 +27,11 @@ class FieldObject {
 
 export default function Home() {
   const [userInput, setUserInput] = useState(Array<FieldObject>);
+  const [showModal, setShowModal] = useState(false);
+  const [overwrite, setOverwrite] = useState(false);
   const timeoutInterval = 5000;
   let timer: number;
+  const overWriteIndex = useRef(-1);
 
   // Populates initial values
   useEffect(() => {
@@ -57,14 +60,42 @@ export default function Home() {
   }
 
   // Handles the user pressing the 'Save' button
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    saveData()
+    if (overWriteIndex.current !== -1) {
+      setShowModal(true);
+      overWriteIndex.current = -1
+    } else {
+      saveCurrentObject();
+      saveData(false);
+    }
   }
 
   // Saves userInput to local storage as 'currentObject' TODO: Save the userInput to the overall JSON object as well
-  function saveData() {
+  function saveCurrentObject() {
     localStorage.setItem("currentObject", JSON.stringify(userInput));
+  }
+
+  function saveData(overwrite: boolean) {
+    const entries = JSON.parse(localStorage.getItem("entries") || "[]");
+    const formattedObject = {
+      id: uuidv4(),
+    };
+
+    for (const element of userInput) {
+      formattedObject[element.fieldName] = element.fieldValue;
+    }
+
+    // TODO: Add validation to check that the entry does not already exist
+
+    if (overwrite) {
+      // If this doesn't work use toSpliced()
+      entries[overWriteIndex.current] = formattedObject;
+      setShowModal(false)
+    } else {
+      entries.push(formattedObject);
+    }
+    localStorage.setItem("entries", JSON.stringify(entries));
   }
 
   // Clears the autosave timeout when the user types inside the form tag
@@ -76,17 +107,24 @@ export default function Home() {
   function onKeyUp() {
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
-      saveData()
+      saveCurrentObject();
     }, timeoutInterval);
+  }
+
+  function changeOverwriteIndex() {
+    overWriteIndex.current = 1;
   }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <form
-        onSubmit={onSubmit}
-        onKeyDown={onKeyDown}
-        onKeyUp={onKeyUp}
-      >
+      {showModal && (
+        <div>
+          <p>Do you want to overwrite the original object?</p>
+          <button type="button" onClick={() => saveData(true)}>Yes</button>
+          <button type="button" onClick={() => saveData(false)}>No</button>
+        </div>
+      )}
+      <form onSubmit={onSubmit} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
         {userInput.map((element, index) => (
           <InputGroup
             key={element.key}
@@ -106,6 +144,10 @@ export default function Home() {
         <br />
         <button className="p-2" type="submit">
           Save
+        </button>
+
+        <button className="p-2" type="button" onClick={changeOverwriteIndex}>
+          Change overWriteIndex
         </button>
       </form>
     </main>
