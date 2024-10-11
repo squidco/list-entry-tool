@@ -1,8 +1,9 @@
 "use client";
-
+import { isEqual, omit } from "lodash";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import InputGroup from "@/components/InputGroup";
+import Entry from "@/components/Entry";
 
 // The same onChange is being used for an input and a textarea. Both share the common properties of name and value so this interface covers those
 interface HTMLTextElements extends HTMLElement {
@@ -17,7 +18,6 @@ interface FieldObject {
   key: string;
 }
 
-
 // TODO: Add 'locked' boolean to persist locked status
 class FieldObject {
   constructor(fieldName: string, fieldValue: string) {
@@ -27,13 +27,19 @@ class FieldObject {
   }
 }
 
+interface EntryObject {
+  [index: string]: string;
+  toString: string;
+}
+
+class EntryObject {}
+
 export default function Home() {
   const [userInput, setUserInput] = useState(Array<FieldObject>);
   const [showModal, setShowModal] = useState(false);
-  const [overwrite, setOverwrite] = useState(false);
+  const [entries, setEntries] = useState(Array<Object>);
   const timeoutInterval = 5000;
-  // TODO: Probably switch this to a ref
-  let timer: number;
+  const timer = useRef(0);
   const overWriteIndex = useRef(-1);
 
   // Populates initial values
@@ -55,9 +61,12 @@ export default function Home() {
     setUserInput([...userInput, new FieldObject("", "")]);
   }
 
-  // Retrieves currentObject from local storage TODO: Retrieve the overall JSON object from local storage
+  // Retrieves currentObject from local storage
+  // TODO: Retrieve the overall JSON object from local storage
   function retrieveStorage() {
     const storedObject = localStorage.getItem("currentObject");
+    const storedEntries = localStorage.getItem("entries");
+    setEntries(storedEntries ? JSON.parse(storedEntries) : []);
     setUserInput(
       storedObject ? JSON.parse(storedObject) : [new FieldObject("", "")]
     );
@@ -68,7 +77,7 @@ export default function Home() {
     e.preventDefault();
     if (overWriteIndex.current !== -1) {
       setShowModal(true);
-      overWriteIndex.current = -1
+      overWriteIndex.current = -1;
     } else {
       saveCurrentObject();
       saveData(false);
@@ -92,27 +101,35 @@ export default function Home() {
       formattedObject[element.fieldName] = element.fieldValue;
     }
 
-    // TODO: Add validation to check that the entry does not already exist
+    // Check for duplicates using lodash
+    // This omits the id as the id would never be identical
+    for (const entry of entries) {
+      if (isEqual(omit(formattedObject, ["id"]), omit(entry, ["id"]))) {
+        console.log("OBJECTS ARE EQUAL");
+        return
+      }
+    }
 
     if (overwrite) {
       // If this doesn't work use toSpliced()
       entries[overWriteIndex.current] = formattedObject;
-      setShowModal(false)
+      setShowModal(false);
     } else {
       entries.push(formattedObject);
     }
     localStorage.setItem("entries", JSON.stringify(entries));
+    console.log("SAVED NEW ENTRY\n" + JSON.stringify(formattedObject))
   }
 
   // Clears the autosave timeout when the user types inside the form tag
   function onKeyDown() {
-    window.clearTimeout(timer);
+    window.clearTimeout(timer.current);
   }
 
   // Clears then creates a timeout that autosaves the users work after they stop typing and the timeout runs out
   function onKeyUp() {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
       saveCurrentObject();
     }, timeoutInterval);
   }
@@ -125,14 +142,18 @@ export default function Home() {
   // TODO: Create a function to clear out fieldValues out of the fieldObjects in userInput
   function clearValues() {}
 
-  // Componentize Modal
+  // TODO: Componentize Modal
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {showModal && (
         <div>
           <p>Do you want to overwrite the original object?</p>
-          <button type="button" onClick={() => saveData(true)}>Yes</button>
-          <button type="button" onClick={() => saveData(false)}>No</button>
+          <button type="button" onClick={() => saveData(true)}>
+            Yes
+          </button>
+          <button type="button" onClick={() => saveData(false)}>
+            No
+          </button>
         </div>
       )}
       <form onSubmit={onSubmit} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
@@ -157,6 +178,11 @@ export default function Home() {
           Save
         </button>
 
+        <div>
+          {entries.map((element, index) => (
+            <Entry text={JSON.stringify(element)} key={element.id} />
+          ))}
+        </div>
         <button className="p-2" type="button" onClick={changeOverwriteIndex}>
           Change overWriteIndex
         </button>
