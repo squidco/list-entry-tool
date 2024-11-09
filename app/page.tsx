@@ -43,7 +43,7 @@ export default function Home() {
   const overWriteIndex = useRef(-1);
 
   // Populates initial values
-  // TODO: Loading screen or something promises would be useful here
+  // TODO: Loading screen or something; promises would be useful here
   useEffect(() => {
     retrieveStorage();
   }, []);
@@ -62,7 +62,6 @@ export default function Home() {
   }
 
   // Retrieves currentObject from local storage
-  // TODO: Retrieve the overall JSON object from local storage
   function retrieveStorage() {
     const storedObject = localStorage.getItem("currentObject");
     const storedEntries = localStorage.getItem("entries");
@@ -85,6 +84,7 @@ export default function Home() {
   }
 
   // Saves userInput to local storage as 'currentObject'
+  // This also saves to the entries in localstorage
   function saveCurrentObject() {
     localStorage.setItem("currentObject", JSON.stringify(userInput));
   }
@@ -106,7 +106,7 @@ export default function Home() {
     for (const entry of entries) {
       if (isEqual(omit(formattedObject, ["id"]), omit(entry, ["id"]))) {
         console.log("OBJECTS ARE EQUAL");
-        return
+        return;
       }
     }
 
@@ -117,8 +117,11 @@ export default function Home() {
     } else {
       entries.push(formattedObject);
     }
+
     localStorage.setItem("entries", JSON.stringify(entries));
-    console.log("SAVED NEW ENTRY\n" + JSON.stringify(formattedObject))
+    console.log("SAVED NEW ENTRY\n" + JSON.stringify(formattedObject));
+    clearValues();
+    retrieveStorage();
   }
 
   // Clears the autosave timeout when the user types inside the form tag
@@ -140,11 +143,17 @@ export default function Home() {
   }
 
   // TODO: Create a function to clear out fieldValues out of the fieldObjects in userInput
-  function clearValues() {}
+  function clearValues() {
+    const copy = [...userInput];
+    for (const element of copy) {
+      element.fieldValue = "";
+    }
+    setUserInput(copy);
+  }
 
   // TODO: Componentize Modal
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen items-center justify-between p-24">
       {showModal && (
         <div>
           <p>Do you want to overwrite the original object?</p>
@@ -156,7 +165,7 @@ export default function Home() {
           </button>
         </div>
       )}
-      <form onSubmit={onSubmit} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
+      <form className="flex flex-col p-4" onSubmit={onSubmit} onKeyDown={onKeyDown} onKeyUp={onKeyUp}>
         {userInput.map((element, index) => (
           <InputGroup
             key={element.key}
@@ -178,15 +187,15 @@ export default function Home() {
           Save
         </button>
 
-        <div>
-          {entries.map((element, index) => (
-            <Entry text={JSON.stringify(element)} key={element.id} />
-          ))}
-        </div>
         <button className="p-2" type="button" onClick={changeOverwriteIndex}>
           Change overWriteIndex
         </button>
       </form>
+      <aside>
+        {entries.map((element, index) => (
+          <Entry entry={element} key={element.id} />
+        ))}
+      </aside>
     </main>
   );
 }
